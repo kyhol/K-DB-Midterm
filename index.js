@@ -5,7 +5,7 @@ const pool = new Pool({
   user: "postgres", //This _should_ be your username, as it's the default one Postgres uses
   host: "localhost",
   database: "your_database_name", //This should be changed to reflect your actual database
-  password: "your_database_password", //This should be changed to reflect the password you used when setting up Postgres
+  password: "What", //This should be changed to reflect the password you used when setting up Postgres
   port: 5432,
 });
 
@@ -13,7 +13,38 @@ const pool = new Pool({
  * Creates the database tables, if they do not already exist.
  */
 async function createTable() {
-  // TODO: Add code to create Movies, Customers, and Rentals tables
+  try {
+    const client = await pool.connect();
+    await client.query(`
+    CREATE TABLE IF NOT EXISTS movies (
+        movie_id SERIAL PRIMARY KEY,
+        title TEXT NOT NULL,
+        release_year INTEGER NOT NULL,
+        genre TEXT NOT NULL,
+        director TEXT NOT NULL
+    );    
+
+    CREATE TABLE IF NOT EXISTS customers (
+        customer_id SERIAL PRIMARY KEY,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        phone TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS rentals (
+        rental_id SERIAL PRIMARY KEY,
+        customer_id INTEGER REFERENCES customers ON DELETE CASCADE,
+        movie_id INTEGER REFERENCES movies,
+        rental_date DATE NOT NULL,
+        return_date DATE
+        );
+    `);
+    client.release();
+  } catch (err) {
+    console.error("Error tables not created:", err);
+    throw err;
+  }
 }
 
 /**
@@ -25,14 +56,32 @@ async function createTable() {
  * @param {string} director Director of the movie
  */
 async function insertMovie(title, year, genre, director) {
-  // TODO: Add code to insert a new movie into the Movies table
+  try {
+    const query =
+      "INSERT INTO movies (title, release_year, genre, director) VALUES ($1, $2, $3, $4)"; //1$,2$,3$,4$ are placeholders to prevent SQL injection. Kinda cool
+    await pool.query(query, [title, year, genre, director]);
+    console.log("Movie inserted Thumbs up");
+  } catch (err) {
+    console.error("Error inserting movie: Thumbs down", err);
+  }
 }
-
 /**
  * Prints all movies in the database to the console
  */
 async function displayMovies() {
-  // TODO: Add code to retrieve and print all movies from the Movies table
+  try {
+    const result = await pool.query("SELECT * FROM movies ORDER BY title"); //selects movies by title and orders them alphabetically
+    console.log("\n\tMovies:");
+
+    //foreachloop to display each movie
+    result.rows.forEach((movie) => {
+      console.log(
+        `${movie.title} (${movie.release_year}) - ${movie.genre} - Directed by: ${movie.director}`
+      );
+    });
+  } catch (err) {
+    console.error("Error displaying movies: thumbs down", err);
+  }
 }
 
 /**
