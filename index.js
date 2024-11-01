@@ -58,7 +58,7 @@ async function createTable() {
 async function insertMovie(title, year, genre, director) {
   try {
     const query =
-      "INSERT INTO movies (title, release_year, genre, director) VALUES ($1, $2, $3, $4)"; //1$,2$,3$,4$ are placeholders to prevent SQL injection. Kinda cool
+      "INSERT INTO movies (title, release_year, genre, director) VALUES ($1, $2, $3, $4)"; //1$,2$,3$,4$ are placeholders to prevent SQL injection. Kinda neat
     await pool.query(query, [title, year, genre, director]);
     console.log("Movie inserted Thumbs up");
   } catch (err) {
@@ -91,7 +91,13 @@ async function displayMovies() {
  * @param {string} newEmail New email address of the customer
  */
 async function updateCustomerEmail(customerId, newEmail) {
-  // TODO: Add code to update a customer's email address
+  try {
+    const query = "UPDATE customers SET email = $1 WHERE customer_id = $2"; //Set placeholder for email and customer_id
+    await pool.query(query, [newEmail, customerId]); //Update the email address and customer_id where 1$ is the new email and 2$ is the customer_id. Once again... neat.
+    console.log("Customer email updated successfully Thumbs up");
+  } catch (err) {
+    console.error("Error updating customer email: Thumbs down", err);
+  }
 }
 
 /**
@@ -100,7 +106,14 @@ async function updateCustomerEmail(customerId, newEmail) {
  * @param {number} customerId ID of the customer to remove
  */
 async function removeCustomer(customerId) {
-  // TODO: Add code to remove a customer and their rental history
+  try {
+    //same deal, try to delete customer by customer_id, but the placeholder prevents SQL injection
+    const query = "DELETE FROM customers WHERE customer_id = $1";
+    await pool.query(query, [customerId]); //fills the data in the placeholder
+    console.log("Customer removed successfully: Thumbs up");
+  } catch (err) {
+    console.error("Error removing customer: Thumbs Down", err);
+  }
 }
 
 /**
