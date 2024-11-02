@@ -113,7 +113,7 @@ async function removeCustomer(customerId) {
     console.log("Customer removed successfully: Thumbs up");
   } catch (err) {
     console.error("Error removing customer: Thumbs Down", err);
-  }
+  } // This will also remove rental history due to ON DELETE CASCADE
 }
 
 /**
